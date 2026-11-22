@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+  <style>
+    * { box-sizing: border-box; }
+
+    html {
+      width: 100%;
+      min-height: 100%;
+      overflow-x: hidden;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      width: 100%;
+      min-width: 0;
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      background: #eaf4ec;
+      color: #254b35;
+      font-family: Arial, sans-serif;
+      font-size: 18px;
+      line-height: 1.6;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 760px;
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: max(24px, env(safe-area-inset-top)) 16px
+        max(30px, env(safe-area-inset-bottom));
+      background: #fff;
+    }
+
+    .header {
+      width: 100%;
+      margin-bottom: 32px;
+      text-align: center;
+    }
+
+    .header h1 {
+      margin: 0 0 10px;
+      color: #21834c;
+      font-size: clamp(29px, 7vw, 38px);
+      line-height: 1.25;
+    }
+
+    .header p {
+      margin: 0;
+      color: #718477;
+      font-size: 17px;
+    }
+
+    .tag {
+      display: inline-block;
+      max-width: 100%;
+      margin-top: 16px;
+      padding: 10px 16px;
+      border-radius: 24px;
+      background: #e3f5e8;
+      color: #21834c;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .section {
+      width: 100%;
+      min-width: 0;
+      margin-bottom: 27px;
+    }
+
+    .section-title {
+      display: block;
+      margin-bottom: 13px;
+      font-size: 20px;
+      font-weight: bold;
+      line-height: 1.5;
+    }
+
+    .device-list {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .device-option {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      width: 100%;
+      min-height: 64px;
+      margin: 0;
+      padding: 13px 14px;
+      border: 2px solid #d4e3d8;
+      border-radius: 14px;
+      background: #fff;
+      color: #254b35;
+      font-size: 17px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .device-option:has(input:checked) {
+      border-color: #32975b;
+      background: #eff8f0;
+    }
+
+    .device-option input {
+      flex: 0 0 24px;
+      width: 24px;
+      height: 24px;
+      margin: 0;
+      accent-color: #25864e;
+    }
+
+    .device-option span {
+      flex: 1;
+    }
+
+    .device-entry {
+      width: 100%;
+      margin-top: 14px;
+      padding: 18px 14px;
+      border: 1px solid #cde6d3;
+      border-radius: 16px;
+      background: #f3faf4;
+    }
+
+    .device-entry h3 {
+      margin: 0 0 12px;
+      color: #21834c;
+      font-size: 19px;
+      line-height: 1.5;
+    }
+
+    .watt-label {
+      display: inline-block;
+      margin-bottom: 14px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      background: #e1f1e5;
+      color: #21834c;
+      font-size: 15px;
+      font-weight: bold;
+    }
+
+    .field-label {
+      display: block;
+      margin: 16px 0 9px;
+      font-size: 17px;
+      font-weight: bold;
+    }
+
+    /* ปุ่มเพิ่มลดจำนวน */
+    .stepper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      width: 100%;
+      min-height: 66px;
+      padding: 7px 9px;
+      border: 2px solid #d4e3d8;
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .stepper button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 54px;
+      width: 54px;
+      height: 52px;
+      min-height: 52px;
+      padding: 0;
+      border: none;
+      border-radius: 11px;
+      background: #e3f5e8;
+      color: #21834c;
+      font-size: 30px;
+      font-weight: bold;
+      cursor: pointer;
+      touch-action: manipulation;
+      user-select: none;
+    }
+
+    .stepper button:active {
+      background: #c8e9d0;
+    }
+
+    .stepper-value {
+      flex: 1;
+      min-width: 0;
+      color: #254b35;
+      font-size: 25px;
+      font-weight: bold;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stepper-unit {
+      color: #718477;
+      font-size: 14px;
+      font-weight: normal;
+    }
+
+    .hint {
+      margin-top: 9px;
+      color: #718477;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .device-summary {
+      margin-top: 14px;
+      padding: 13px;
+      border-radius: 12px;
+      background: #eaf6ed;
+      color: #21834c;
+      font-size: 15px;
+    }
+
+    .device-summary strong {
+      font-size: 19px;
+    }
+
+    .calculate-button {
+      display: block;
+      width: 100%;
+      min-height: 68px;
+      padding: 15px;
+      border: 0;
+      border-radius: 15px;
+      background: #25864e;
+      color: white;
+      font-family: Arial, sans-serif;
+      font-size: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    .calculate-button:active {
+      background: #176b3a;
+    }
+
+    .results {
+      display: none;
+      width: 100%;
+      margin-top: 28px;
+      padding: 20px 12px;
+      border-radius: 18px;
+      background: #eff8f0;
+    }
+
+    .results h2 {
+      margin: 8px 0 20px;
+      color: #21834c;
+      font-size: 27px;
+      text-align: center;
+    }
+
+    .result-card {
+      width: 100%;
+      margin-top: 13px;
+      padding: 23px 10px;
+      border-radius: 15px;
+      background: #fff;
+      text-align: center;
+    }
+
+    .result-card p {
+      margin: 0 0 9px;
+      color: #718477;
+      font-size: 16px;
+    }
+
+    .result-card h3 {
+      margin: 0;
+      color: #21834c;
+      font-size: clamp(34px, 9vw, 44px);
+      line-height: 1.3;
+      overflow-wrap: anywhere;
+    }
+
+    .result-card small {
+      color: #718477;
+      font-size: 15px;
+    }
+
+    .message {
+      margin-top: 22px;
+      color: #21834c;
+      font-size: 16px;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .footer {
+      margin-top: 35px;
+      padding: 20px 5px;
+      color: #87968b;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    @media screen and (min-width: 761px) {
+      body {
+        padding: 24px 0;
+      }
+
+      .container {
+        min-height: calc(100vh - 48px);
+        border-radius: 22px;
+        box-shadow: 0 8px 30px rgba(30,80,45,.08);
+      }
+    }
+
+    /* LARGE MOBILE DISPLAY */
+    @media screen and (max-width: 760px) {
+
+      html, body {
+        width: 100%;
+        max-width: 100%;
+        font-size: 22px;
+      }
+
+      .container {
+        width: 100%;
+        max-width: 100%;
+        padding: 28px 14px 40px;
+      }
+
+      .header {
+        margin-bottom: 42px;
+      }
+
+      .header h1 {
+        font-size: 38px;
+      }
+
+      .header p {
+        font-size: 22px;
+      }
+
+      .tag {
+        font-size: 18px;
+        padding: 13px 18px;
+      }
+
+      .section {
+        margin-bottom: 38px;
+      }
+
+      .section-title {
+        font-size: 25px;
+        margin-bottom: 20px;
+      }
+
+      .device-option {
+        min-height: 82px;
+        padding: 18px;
+        font-size: 22px;
+        gap: 16px;
+      }
+
+      .device-option input {
+        width: 30px;
+        height: 30px;
+        flex-basis: 30px;
+      }
+
+      .device-entry {
+        padding: 24px 16px;
+        margin-top: 20px;
+      }
+
+      .device-entry h3 {
+        font-size: 25px;
+      }
+
+      .watt-label {
+        font-size: 19px;
+        padding: 9px 14px;
+      }
+
+      .field-label {
+        font-size: 21px;
+        margin: 20px 0 12px;
+      }
+
+      .stepper {
+        min-height: 82px;
+        padding: 9px;
+        gap: 10px;
+      }
+
+      .stepper button {
+        flex-basis: 62px;
+        width: 62px;
+        height: 62px;
+        min-height: 62px;
+        font-size: 34px;
+      }
+
+      .stepper-value {
+        font-size: 29px;
+      }
+
+      .stepper-unit {
+        font-size: 17px;
+      }
+
+      .hint {
+        font-size: 18px;
+      }
+
+      .device-summary {
+        padding: 20px;
+        font-size: 19px;
+      }
+
+      .device-summary strong {
+        font-size: 24px;
+      }
+
+      .calculate-button {
+        min-height: 88px;
+        font-size: 24px;
+      }
+
+      .results {
+        padding: 26px 14px;
+      }
+
+      .results h2 {
+        font-size: 31px;
+      }
+
+      .result-card {
+        padding: 30px 12px;
+      }
+
+      .result-card p {
+        font-size: 21px;
+      }
+
+      .result-card h3 {
+        font-size: 46px;
+      }
+
+      .result-card small {
+        font-size: 19px;
+      }
+
+      .message {
+        font-size: 20px;
+      }
+
+      .footer {
+        font-size: 17px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <h1>⚡ KNOW YOUR ENERGY</h1>
+    <p>Small Actions, Big Energy Savings 🌱</p>
+    <span class="tag">ENERGY SAVING CHALLENGE</span>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="section">
+
+    <label class="section-title">
+      1. เลือกอุปกรณ์ที่ต้องการประหยัดพลังงาน
+    </label>
+
+    <div class="device-list" id="deviceList">
+
+      <label class="device-option">
+        <input type="checkbox" name="device" value="monitor" onchange="selectDevice()">
+        <span>🖥️ Computer Monitor</span>
+      </label>
+
+      <label class="device-option">
+        <input type="checkbox" name="device" value="computer" onchange="selectDevice()">
+        <span>💻 Desktop Computer</span>
+      </label>
+
+      <label class="device-option">
+        <input type="checkbox" name="device" value="laptop" onchange="selectDevice()">
+        <span>💻 Laptop</span>
+      </label>
+
+      <label class="device-option">
+        <input type="checkbox" name="device" value="light" onchange="selectDevice()">
+        <span>💡 LED Light Bulb</span>
+      </label>
+
+      <label class="device-option">
+        <input type="checkbox" name="device" value="projector" onchange="selectDevice()">
+        <span>📽️ LCD Projector</span>
+      </label>
+
+      <label class="device-option">
+        <input type="checkbox" name="device" value="ac" onchange="selectDevice()">
+        <span>❄️ Air Conditioner</span>
+      </label>
+
+    </div>
+
+    <div class="hint">
+      💡 สามารถเลือกอุปกรณ์ได้มากกว่า 1 ประเภท
+      ระบบจะแสดงรายละเอียดของแต่ละอุปกรณ์ด้านล่าง
+    </div>
+
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="section" id="deviceInputSection" style="display:none;">
+
+    <label class="section-title">
+      2. ระบุรายละเอียดของแต่ละอุปกรณ์
+    </label>
+
+    <div id="deviceInputs"></div>
+
+    <div class="device-summary" id="deviceSummary">
+      เลือกอุปกรณ์เพื่อเริ่มต้น
+    </div>
+
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="section">
+
+    <label class="section-title">
+      3. จำนวนวันที่ทำพฤติกรรม
+    </label>
+
+    <div class="stepper">
+      <button type="button" onclick="changeValue('days', -1, 1, 1)"
+        aria-label="ลดจำนวนวัน">−</button>
+
+      <div class="stepper-value">
+        <span id="days">1</span>
+        <span class="stepper-unit">วัน</span>
+      </div>
+
+      <button type="button" onclick="changeValue('days', 1, 1, 1)"
+        aria-label="เพิ่มจำนวนวัน">+</button>
+    </div>
+
+    <div class="hint">
+      📅 กดปุ่ม + หรือ − เพื่อเลือกจำนวนวันที่คุณทำพฤติกรรมประหยัดพลังงาน
+    </div>
+
+  </div>
+
+  <!-- CALCULATE -->
+  <button type="button" class="calculate-button" onclick="calculate()">
+    ⚡ Calculate My Energy Saving
+  </button>
+
+  <!-- RESULTS -->
+  <div class="results" id="results">
+
+    <h2>🎉 Your Energy Impact!</h2>
+
+    <div class="result-card">
+      <p>⚡ Energy Saved</p>
+      <h3 id="energy">0.00</h3>
+      <small>kWh</small>
+    </div>
+
+    <div class="result-card">
+      <p>🌍 Carbon Reduction</p>
+      <h3 id="carbon">0.00</h3>
+      <small>kgCO2e</small>
+    </div>
+
+    <div class="result-card">
+      <p>💰 Electricity Cost Saving</p>
+      <h3 id="cost">0.00</h3>
+      <small>THB</small>
+    </div>
+
+    <div class="message" id="message"></div>
+
+  </div>
+
+  <div class="footer">
+    KNOW YOUR ENERGY | Save Energy, Save Earth 🌎
+    <br>
+    Results are estimates based on reference power ratings.
+  </div>
+
+</div>
+
+<script>
+
+  // Reference power ratings (Watts)
+  const deviceWatts = {
+    monitor: 28,
+    computer: 90,
+    laptop: 30,
+    light: 12,
+    projector: 230,
+    ac: 600
+  };
+
+  // Device names
+  const deviceNames = {
+    monitor: "🖥️ Computer Monitor",
+    computer: "💻 Desktop Computer",
+    laptop: "💻 Laptop",
+    light: "💡 LED Light Bulb",
+    projector: "📽️ LCD Projector",
+    ac: "❄️ Air Conditioner"
+  };
+
+  function getSelectedDevices() {
+    return Array.from(
+      document.querySelectorAll('input[name="device"]:checked')
+    ).map(input => input.value);
+  }
+
+  // Read number from stepper
+  function getValue(id) {
+    return Number(document.getElementById(id).textContent);
+  }
+
+  // Increase or decrease values
+  function changeValue(id, change, min, step) {
+
+    const element = document.getElementById(id);
+    let current = Number(element.textContent);
+
+    let next = current + change * step;
+
+    if (next < min) {
+      next = min;
+    }
+
+    // Keep hours in half-hour increments
+    next = Math.round(next * 100) / 100;
+
+    element.textContent = Number.isInteger(next)
+      ? next
+      : next.toFixed(1);
+
+    document.getElementById("results").style.display = "none";
+
+    updateSummary();
+  }
+
+  // Generate individual device cards
+  function selectDevice() {
+
+    const selectedDevices = getSelectedDevices();
+
+    const section = document.getElementById("deviceInputSection");
+    const container = document.getElementById("deviceInputs");
+    const results = document.getElementById("results");
+    const summary = document.getElementById("deviceSummary");
+
+    results.style.display = "none";
+
+    if (selectedDevices.length === 0) {
+      section.style.display = "none";
+      container.innerHTML = "";
+      summary.innerHTML = "เลือกอุปกรณ์เพื่อเริ่มต้น";
+      return;
+    }
+
+    section.style.display = "block";
+
+    // Create cards for newly selected devices
+    selectedDevices.forEach(device => {
+
+      if (!document.getElementById("card-" + device)) {
+
+        const card = document.createElement("div");
+        card.className = "device-entry";
+        card.id = "card-" + device;
+
+        card.innerHTML = `
+          <h3>${deviceNames[device]}</h3>
+
+          <div class="watt-label">
+            ⚡ Power Rating: ${deviceWatts[device]} W
+          </div>
+
+          <label class="field-label">
+            จำนวนอุปกรณ์
+          </label>
+
+          <div class="stepper">
+            <button type="button"
+              onclick="changeValue('quantity-${device}', -1, 1, 1)"
+              aria-label="ลดจำนวนอุปกรณ์">−</button>
+
+            <div class="stepper-value">
+              <span id="quantity-${device}">1</span>
+              <span class="stepper-unit">เครื่อง</span>
+            </div>
+
+            <button type="button"
+              onclick="changeValue('quantity-${device}', 1, 1, 1)"
+              aria-label="เพิ่มจำนวนอุปกรณ์">+</button>
+          </div>
+
+          <label class="field-label">
+            ลดการใช้งานกี่ชั่วโมงต่อวัน?
+          </label>
+
+          <div class="stepper">
+            <button type="button"
+              onclick="changeValue('hours-${device}', -1, 0.5, 0.5)"
+              aria-label="ลดชั่วโมง">−</button>
+
+            <div class="stepper-value">
+              <span id="hours-${device}">1</span>
+              <span class="stepper-unit">ชั่วโมง</span>
+            </div>
+
+            <button type="button"
+              onclick="changeValue('hours-${device}', 1, 0.5, 0.5)"
+              aria-label="เพิ่มชั่วโมง">+</button>
+          </div>
+
+          <div class="hint">
+            🌱 กดปุ่ม + หรือ − เพื่อเลือกจำนวนอุปกรณ์และชั่วโมงที่ลดการใช้งาน
+          </div>
+        `;
+
+        container.appendChild(card);
+      }
+
+    });
+
+    // Remove unchecked device cards
+    Array.from(container.children).forEach(card => {
+
+      const device = card.id.replace("card-", "");
+
+      if (!selectedDevices.includes(device)) {
+        card.remove();
+      }
+
+    });
+
+    updateSummary();
+  }
+
+  // Update selected device summary
+  function updateSummary() {
+
+    const selectedDevices = getSelectedDevices();
+
+    let totalDevices = 0;
+    let totalEnergyPerDay = 0;
+
+    selectedDevices.forEach(device => {
+
+      const quantity = getValue("quantity-" + device);
+      const hours = getValue("hours-" + device);
+
+      totalDevices += quantity;
+
+      totalEnergyPerDay +=
+        (deviceWatts[device] * quantity * hours) / 1000;
+
+    });
+
+    document.getElementById("deviceSummary").innerHTML = `
+      📌 จำนวนอุปกรณ์ทั้งหมด: <strong>${totalDevices}</strong> เครื่อง
+      <br>
+      ⚡ พลังงานที่ประหยัดได้ต่อวัน:
+      <strong>${totalEnergyPerDay.toFixed(3)}</strong> kWh
+    `;
+
+  }
+
+  // Calculate energy savings and save to Google Sheets
+  function calculate() {
+
+    const selectedDevices = getSelectedDevices();
+    const days = getValue("days");
+    const button = document.querySelector(".calculate-button");
+    const message = document.getElementById("message");
+
+    if (selectedDevices.length === 0) {
+      alert("⚠️ Please select at least one device!");
+      return;
+    }
+
+    if (!Number.isInteger(days) || days <= 0) {
+      alert("⚠️ Please select a valid number of days!");
+      return;
+    }
+
+    // Prevent duplicate submission
+    if (button.disabled) return;
+
+    let energySaved = 0;
+    const devices = [];
+
+    // Calculate each device separately
+    for (const device of selectedDevices) {
+
+      const quantity = getValue("quantity-" + device);
+      const hours = getValue("hours-" + device);
+
+      if (
+        !Number.isInteger(quantity) ||
+        quantity <= 0 ||
+        !Number.isFinite(hours) ||
+        hours <= 0
+      ) {
+
+        alert(
+          "⚠️ Please complete the quantity and hours for " +
+          deviceNames[device]
+        );
+
+        document.getElementById("card-" + device).scrollIntoView({
+          behavior: "smooth",
+          block: "center"
+        });
+
+        return;
+      }
+
+      const deviceEnergy =
+        (deviceWatts[device] * quantity * hours * days) / 1000;
+
+      energySaved += deviceEnergy;
+
+      // Store individual device information
+      devices.push({
+        name: deviceNames[device],
+        watt: deviceWatts[device],
+        quantity: quantity,
+        hours: hours,
+        energy: deviceEnergy
+      });
+
+    }
+
+    // Calculate total results
+    const carbonReduction = energySaved * 0.5562;
+    const costSaving = energySaved * 4.3555;
+
+    // Display results
+    document.getElementById("energy").innerText =
+      energySaved.toFixed(2);
+
+    document.getElementById("carbon").innerText =
+      carbonReduction.toFixed(2);
+
+    document.getElementById("cost").innerText =
+      costSaving.toFixed(2);
+
+    const results = document.getElementById("results");
+    results.style.display = "block";
+
+    results.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+
+    // Prepare data for Google Sheets
+    const data = {
+      devices: devices,
+      days: days,
+      carbon: carbonReduction,
+      cost: costSaving
+    };
+
+    // Check Google Apps Script connection
+    if (
+      typeof google === "undefined" ||
+      !google.script ||
+      !google.script.run
+    ) {
+      message.innerText =
+        "⚠️ กรุณาเปิดเว็บไซต์ผ่าน Google Apps Script Web App";
+
+      return;
+    }
+
+    // Disable button while saving
+    button.disabled = true;
+    button.innerText = "⏳ Saving Your Energy Data...";
+    message.innerText = "📊 กำลังบันทึกข้อมูลลง Google Sheets...";
+
+    // Send data to Google Sheets
+    google.script.run
+
+      .withSuccessHandler(function(response) {
+
+        button.disabled = false;
+        button.innerText = "⚡ Calculate My Energy Saving";
+
+        if (response && response.success) {
+
+          message.innerText =
+            "🎉 Great job! บันทึกข้อมูลสำเร็จแล้ว 🌱";
+
+        } else {
+
+          message.innerText =
+            "⚠️ ไม่สามารถบันทึกข้อมูลได้ กรุณาลองอีกครั้ง";
+
+        }
+
+      })
+
+      .withFailureHandler(function(error) {
+
+        button.disabled = false;
+        button.innerText = "⚡ Calculate My Energy Saving";
+
+        message.innerText =
+          "❌ เกิดข้อผิดพลาดในการบันทึก: " +
+          (error.message || error);
+
+      })
+
+      .saveCalculatorData(data);
+
+  }
+
+</script>
+
+</body>
+</html>
