@@ -134,7 +134,7 @@
     document.getElementById('results').style.display = 'block';
     button.disabled = true;
     button.textContent = '⏳ กำลังบันทึกข้อมูล...';
-    message.textContent = 'กำลังส่งข้อมูลไปยัง Google Sheets...';
+    message.textContent = 'กำลังบันทึกข้อมูล';
 
     try {
       await fetch(SHEETS_WEB_APP_URL, {
@@ -143,7 +143,7 @@
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({ devices, days, carbon, cost })
       });
-      message.textContent = 'ส่งคำขอบันทึกแล้ว หากไม่พบแถวใหม่ในชีต ให้ตรวจสอบสิทธิ์และ deployment ของ Apps Script';
+      message.textContent = 'ส่งข้อมูลสำเร็จ';
     } catch (error) {
       message.textContent = 'ส่งข้อมูลไม่สำเร็จ: ' + (error.message || error);
     } finally {
