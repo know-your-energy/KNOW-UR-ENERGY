@@ -2,23 +2,28 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>KNOW YOUR ENERGY</title>
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; padding: 20px; background: #eaf4ec; color: #254b35; font: 18px/1.6 Arial, sans-serif; }
-    main { max-width: 760px; margin: auto; padding: 24px; background: #fff; border-radius: 18px; }
+    main { max-width: 760px; min-height: 100vh; margin: auto; padding: 24px; background: #fff; border-radius: 18px; }
     h1, h2 { color: #21834c; text-align: center; }
-    .device { display: flex; align-items: center; gap: 12px; margin: 10px 0; padding: 14px; border: 1px solid #cde6d3; border-radius: 12px; }
+    .device { display: flex; align-items: center; gap: 12px; margin: 10px 0; padding: 14px; border: 1px solid #cde6d3; border-radius: 12px; cursor: pointer; }
     .device input { width: 22px; height: 22px; accent-color: #25864e; }
-    .field { margin: 18px 0; }
-    label, .label { display: block; font-weight: bold; }
-    input[type=number] { width: 100%; padding: 12px; border: 1px solid #abc8b1; border-radius: 9px; font-size: 18px; }
-    button { width: 100%; padding: 15px; border: 0; border-radius: 12px; background: #25864e; color: white; font-size: 19px; font-weight: bold; cursor: pointer; }
-    button:disabled { opacity: .65; cursor: wait; }
+    .field { margin: 18px 0; padding: 16px; border: 1px solid #cde6d3; border-radius: 14px; background: #f7fbf7; }
+    .field > label { display: block; margin: 15px 0 8px; font-weight: bold; }
+    .stepper { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 58px; padding: 5px 8px; border: 1px solid #d4e3d8; border-radius: 12px; background: #fff; }
+    .stepper button { display: flex; align-items: center; justify-content: center; flex: 0 0 42px; width: 42px; height: 42px; padding: 0; border: 0; border-radius: 9px; background: #e3f5e8; color: #21834c; font-size: 25px; font-weight: bold; cursor: pointer; touch-action: manipulation; }
+    .stepper button:active { background: #c8e9d0; }
+    .stepper-value { flex: 1; text-align: center; font-weight: bold; font-variant-numeric: tabular-nums; }
+    .stepper-unit { margin-left: 4px; color: #718477; font-size: 13px; font-weight: normal; }
+    #calculate { display: block; width: 100%; margin-top: 20px; padding: 15px; border: 0; border-radius: 12px; background: #25864e; color: white; font-size: 19px; font-weight: bold; cursor: pointer; }
+    #calculate:disabled { opacity: .65; cursor: wait; }
     #results { display: none; margin-top: 20px; padding: 16px; border-radius: 12px; background: #eff8f0; }
     #message { margin-top: 14px; text-align: center; font-weight: bold; overflow-wrap: anywhere; }
     .hint { color: #718477; font-size: 14px; }
+    @media (max-width: 600px) { body { padding: 0; font-size: 17px; } main { padding: 20px 14px; border-radius: 0; } }
   </style>
 </head>
 <body>
@@ -29,8 +34,13 @@
   <div id="devices"></div>
   <div id="deviceFields"></div>
   <div class="field">
-    <label for="days">จำนวนวันที่ทำพฤติกรรม</label>
-    <input id="days" type="number" min="1" step="1" value="1">
+    <label>3. จำนวนวันที่ทำพฤติกรรม</label>
+    <div class="stepper" aria-label="จำนวนวันที่ทำพฤติกรรม">
+      <button type="button" data-target="days" data-direction="-1" data-step="1" data-min="1" aria-label="ลดจำนวนวัน">−</button>
+      <div class="stepper-value"><span id="days">1</span><span class="stepper-unit">วัน</span></div>
+      <button type="button" data-target="days" data-direction="1" data-step="1" data-min="1" aria-label="เพิ่มจำนวนวัน">+</button>
+    </div>
+    <div class="hint">กดปุ่ม + หรือ − เพื่อเลือกจำนวนวันที่ทำพฤติกรรมประหยัดพลังงาน</div>
   </div>
   <button id="calculate" type="button">⚡ Calculate My Energy Saving</button>
   <section id="results" aria-live="polite">
@@ -43,7 +53,6 @@
   <p class="hint">Results are estimates based on reference power ratings.</p>
 </main>
 <script>
-  // Public Apps Script Web App endpoint provided by the site owner.
   const SHEETS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxJ1D4rFb9jkRf0_AqQwdPyjCoWC-5KXTBniwZj6YZ33YQuK1aDWb_3V_m_W4mDe5iK/exec';
   const equipment = [
     { id: 'monitor', name: '🖥️ Computer Monitor', watt: 28 },
@@ -57,6 +66,14 @@
   const fieldsRoot = document.getElementById('deviceFields');
   const message = document.getElementById('message');
 
+  function stepperMarkup(id, value, min, step, unit, label) {
+    return `<div class="stepper" aria-label="${label}">
+      <button type="button" data-target="${id}" data-direction="-1" data-step="${step}" data-min="${min}" aria-label="ลด${label}">−</button>
+      <div class="stepper-value"><span id="${id}">${value}</span><span class="stepper-unit">${unit}</span></div>
+      <button type="button" data-target="${id}" data-direction="1" data-step="${step}" data-min="${min}" aria-label="เพิ่ม${label}">+</button>
+    </div>`;
+  }
+
   equipment.forEach(item => {
     const label = document.createElement('label');
     label.className = 'device';
@@ -69,10 +86,10 @@
         field.className = 'field';
         field.id = 'fields-' + item.id;
         field.innerHTML = `<strong>${item.name}</strong>
-          <label for="quantity-${item.id}">จำนวนอุปกรณ์</label>
-          <input id="quantity-${item.id}" type="number" min="1" step="1" value="1">
-          <label for="hours-${item.id}">ลดการใช้งานกี่ชั่วโมงต่อวัน?</label>
-          <input id="hours-${item.id}" type="number" min="0.5" step="0.5" value="1">`;
+          <label>จำนวนอุปกรณ์</label>
+          ${stepperMarkup('quantity-' + item.id, 1, 1, 1, 'เครื่อง', 'จำนวนอุปกรณ์')}
+          <label>ลดการใช้งานกี่ชั่วโมงต่อวัน?</label>
+          ${stepperMarkup('hours-' + item.id, 1, 0.5, 0.5, 'ชั่วโมง', 'ชั่วโมงต่อวัน')}`;
         fieldsRoot.appendChild(field);
       } else if (!checkbox.checked && field) {
         field.remove();
@@ -82,22 +99,28 @@
     deviceRoot.appendChild(label);
   });
 
+  // All numeric controls are steppers; no number fields are used.
+  document.addEventListener('click', event => {
+    const control = event.target.closest('button[data-target]');
+    if (!control) return;
+    const valueElement = document.getElementById(control.dataset.target);
+    if (!valueElement) return;
+    const next = Math.max(Number(control.dataset.min), Number(valueElement.textContent) + Number(control.dataset.direction) * Number(control.dataset.step));
+    valueElement.textContent = Number.isInteger(next) ? String(next) : next.toFixed(1);
+    document.getElementById('results').style.display = 'none';
+  });
+
   document.getElementById('calculate').addEventListener('click', async () => {
     const button = document.getElementById('calculate');
     const selected = equipment.filter(item => deviceRoot.querySelector(`input[value="${item.id}"]`).checked);
-    const days = Number(document.getElementById('days').value);
+    const days = Number(document.getElementById('days').textContent);
     if (!selected.length) { alert('Please select at least one device.'); return; }
-    if (!Number.isInteger(days) || days <= 0) { alert('Enter a valid number of days.'); return; }
 
     let energySaved = 0;
     const devices = [];
     for (const item of selected) {
-      const quantity = Number(document.getElementById('quantity-' + item.id).value);
-      const hours = Number(document.getElementById('hours-' + item.id).value);
-      if (!Number.isInteger(quantity) || quantity <= 0 || !Number.isFinite(hours) || hours <= 0) {
-        alert(`Enter a valid quantity and hours for ${item.name}.`);
-        return;
-      }
+      const quantity = Number(document.getElementById('quantity-' + item.id).textContent);
+      const hours = Number(document.getElementById('hours-' + item.id).textContent);
       const energy = item.watt * quantity * hours * days / 1000;
       energySaved += energy;
       devices.push({ name: item.name, watt: item.watt, quantity, hours, energy });
@@ -114,8 +137,6 @@
     message.textContent = 'กำลังส่งข้อมูลไปยัง Google Sheets...';
 
     try {
-      // text/plain avoids a CORS preflight. Apps Script receives the JSON in e.postData.contents.
-      // The response is opaque in no-cors mode, so the browser cannot inspect the server's JSON reply.
       await fetch(SHEETS_WEB_APP_URL, {
         method: 'POST',
         mode: 'no-cors',
