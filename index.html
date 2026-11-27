@@ -56,15 +56,15 @@
     <p>💰 Electricity Cost Saving: <strong id="cost">0</strong> THB</p>
     <div id="message"></div>
   </section>
-  <p class="hint">Results are estimates based on reference power ratings.</p>
+  <p class="hint">Results are estimates based on reference power ratings. Power ratings are preliminary equipment values from True Digital Park.</p>
 </main>
 <script>
   const SHEETS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxJ1D4rFb9jkRf0_AqQwdPyjCoWC-5KXTBniwZj6YZ33YQuK1aDWb_3V_m_W4mDe5iK/exec';
   const equipment = [
-    { id: 'computer', name: '💻 Desktop Computer', watt: 90 },
-    { id: 'laptop', name: '💻 Laptop', watt: 30 },
-    { id: 'light', name: '💡 LED Light Bulb', watt: 12 },
-    { id: 'ac', name: '❄️ Air Conditioner', watt: 600 }
+    { id: 'computer', name: '💻 Desktop Computer', watt: 100 },
+    { id: 'laptop', name: '💻 Laptop', watt: 100 },
+    { id: 'light', name: '💡 LED Light Bulb', watt: 19.2 },
+    { id: 'ac', name: '❄️ Air Conditioner', watt: 150 }
   ];
   const deviceRoot = document.getElementById('devices');
   const fieldsRoot = document.getElementById('deviceFields');
