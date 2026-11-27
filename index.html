@@ -18,6 +18,7 @@
     .stepper button:active { background: #c8e9d0; }
     .stepper-value { flex: 1; text-align: center; font-weight: bold; font-variant-numeric: tabular-nums; }
     .stepper-unit { margin-left: 4px; color: #718477; font-size: 13px; font-weight: normal; }
+    .watt-total { margin: 8px 0 0; color: #21834c; font-size: 15px; }
     #calculate { display: block; width: 100%; margin-top: 20px; padding: 15px; border: 0; border-radius: 12px; background: #25864e; color: white; font-size: 19px; font-weight: bold; cursor: pointer; }
     #calculate:disabled { opacity: .65; cursor: wait; }
     #results { display: none; margin-top: 20px; padding: 16px; border: 1px solid #cde6d3; border-radius: 12px; background: #fff; }
@@ -88,6 +89,7 @@
         field.innerHTML = `<strong>${item.name}</strong>
           <label>จำนวนอุปกรณ์</label>
           ${stepperMarkup('quantity-' + item.id, 1, 1, 1, 'เครื่อง', 'จำนวนอุปกรณ์')}
+          <p class="watt-total">⚡ กำลังไฟรวม: <strong><span id="watt-total-${item.id}">${item.watt}</span> W</strong></p>
           <label>ลดการใช้งานกี่ชั่วโมงต่อวัน?</label>
           ${stepperMarkup('hours-' + item.id, 1, 0.5, 0.5, 'ชั่วโมง', 'ชั่วโมงต่อวัน')}`;
         fieldsRoot.appendChild(field);
@@ -107,6 +109,17 @@
     if (!valueElement) return;
     const next = Math.max(Number(control.dataset.min), Number(valueElement.textContent) + Number(control.dataset.direction) * Number(control.dataset.step));
     valueElement.textContent = Number.isInteger(next) ? String(next) : next.toFixed(1);
+
+    if (control.dataset.target.startsWith('quantity-')) {
+      const equipmentId = control.dataset.target.slice('quantity-'.length);
+      const item = equipment.find(device => device.id === equipmentId);
+      const wattTotal = document.getElementById('watt-total-' + equipmentId);
+      if (item && wattTotal) {
+        const totalWatt = item.watt * next;
+        wattTotal.textContent = Number.isInteger(totalWatt) ? String(totalWatt) : totalWatt.toFixed(1);
+      }
+    }
+
     document.getElementById('results').style.display = 'none';
   });
 
