@@ -23,6 +23,11 @@
     #results { display: none; margin-top: 20px; padding: 16px; border-radius: 12px; background: #eff8f0; }
     #message { margin-top: 14px; text-align: center; font-weight: bold; overflow-wrap: anywhere; }
     .hint { color: #718477; font-size: 14px; }
+    #wattDialog { width: min(400px, calc(100% - 32px)); padding: 24px; border: 0; border-radius: 16px; color: #254b35; text-align: center; box-shadow: 0 12px 40px rgb(0 0 0 / 25%); }
+    #wattDialog::backdrop { background: rgb(20 40 25 / 50%); }
+    #wattDialog h2 { margin-top: 0; }
+    #wattDialog p { margin: 12px 0 20px; }
+    #closeWattDialog { padding: 10px 24px; border: 0; border-radius: 9px; background: #25864e; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; }
     @media (max-width: 600px) { body { padding: 0; font-size: 17px; } main { padding: 20px 14px; border-radius: 0; } }
   </style>
 </head>
@@ -52,6 +57,11 @@
   </section>
   <p class="hint">Results are estimates based on reference power ratings.</p>
 </main>
+<dialog id="wattDialog" aria-labelledby="wattTitle" aria-describedby="wattText">
+  <h2 id="wattTitle">กำลังไฟของอุปกรณ์</h2>
+  <p id="wattText"></p>
+  <button id="closeWattDialog" type="button">ตกลง</button>
+</dialog>
 <script>
   const SHEETS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxJ1D4rFb9jkRf0_AqQwdPyjCoWC-5KXTBniwZj6YZ33YQuK1aDWb_3V_m_W4mDe5iK/exec';
   const equipment = [
@@ -65,6 +75,8 @@
   const deviceRoot = document.getElementById('devices');
   const fieldsRoot = document.getElementById('deviceFields');
   const message = document.getElementById('message');
+  const wattDialog = document.getElementById('wattDialog');
+  const wattText = document.getElementById('wattText');
 
   function stepperMarkup(id, value, min, step, unit, label) {
     return `<div class="stepper" aria-label="${label}">
@@ -74,24 +86,33 @@
     </div>`;
   }
 
+  document.getElementById('closeWattDialog').addEventListener('click', () => wattDialog.close());
+  wattDialog.addEventListener('click', event => {
+    if (event.target === wattDialog) wattDialog.close();
+  });
+
   equipment.forEach(item => {
     const label = document.createElement('label');
     label.className = 'device';
-    label.innerHTML = `<input type="checkbox" value="${item.id}"><span>${item.name} (${item.watt} W)</span>`;
+    label.innerHTML = `<input type="checkbox" value="${item.id}"><span>${item.name}</span>`;
     const checkbox = label.querySelector('input');
     checkbox.addEventListener('change', () => {
       let field = document.getElementById('fields-' + item.id);
-      if (checkbox.checked && !field) {
-        field = document.createElement('div');
-        field.className = 'field';
-        field.id = 'fields-' + item.id;
-        field.innerHTML = `<strong>${item.name}</strong>
-          <label>จำนวนอุปกรณ์</label>
-          ${stepperMarkup('quantity-' + item.id, 1, 1, 1, 'เครื่อง', 'จำนวนอุปกรณ์')}
-          <label>ลดการใช้งานกี่ชั่วโมงต่อวัน?</label>
-          ${stepperMarkup('hours-' + item.id, 1, 0.5, 0.5, 'ชั่วโมง', 'ชั่วโมงต่อวัน')}`;
-        fieldsRoot.appendChild(field);
-      } else if (!checkbox.checked && field) {
+      if (checkbox.checked) {
+        wattText.textContent = `${item.name} ใช้กำลังไฟ ${item.watt} วัตต์ (W)`;
+        wattDialog.showModal();
+        if (!field) {
+          field = document.createElement('div');
+          field.className = 'field';
+          field.id = 'fields-' + item.id;
+          field.innerHTML = `<strong>${item.name}</strong>
+            <label>จำนวนอุปกรณ์</label>
+            ${stepperMarkup('quantity-' + item.id, 1, 1, 1, 'เครื่อง', 'จำนวนอุปกรณ์')}
+            <label>ลดการใช้งานกี่ชั่วโมงต่อวัน?</label>
+            ${stepperMarkup('hours-' + item.id, 1, 0.5, 0.5, 'ชั่วโมง', 'ชั่วโมงต่อวัน')}`;
+          fieldsRoot.appendChild(field);
+        }
+      } else if (field) {
         field.remove();
       }
       document.getElementById('results').style.display = 'none';
