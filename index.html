@@ -21,13 +21,10 @@
     #calculate { display: block; width: 100%; margin-top: 20px; padding: 15px; border: 0; border-radius: 12px; background: #25864e; color: white; font-size: 19px; font-weight: bold; cursor: pointer; }
     #calculate:disabled { opacity: .65; cursor: wait; }
     #results { display: none; margin-top: 20px; padding: 16px; border-radius: 12px; background: #eff8f0; }
+    #summary { margin: 0 0 18px; padding: 12px 14px; border: 1px solid #cde6d3; border-radius: 10px; background: #fff; }
+    #summary p { margin: 4px 0; }
     #message { margin-top: 14px; text-align: center; font-weight: bold; overflow-wrap: anywhere; }
     .hint { color: #718477; font-size: 14px; }
-    #wattDialog { width: min(400px, calc(100% - 32px)); padding: 24px; border: 0; border-radius: 16px; color: #254b35; text-align: center; box-shadow: 0 12px 40px rgb(0 0 0 / 25%); }
-    #wattDialog::backdrop { background: rgb(20 40 25 / 50%); }
-    #wattDialog h2 { margin-top: 0; }
-    #wattDialog p { margin: 12px 0 20px; }
-    #closeWattDialog { padding: 10px 24px; border: 0; border-radius: 9px; background: #25864e; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; }
     @media (max-width: 600px) { body { padding: 0; font-size: 17px; } main { padding: 20px 14px; border-radius: 0; } }
   </style>
 </head>
@@ -50,6 +47,10 @@
   <button id="calculate" type="button">⚡ Calculate My Energy Saving</button>
   <section id="results" aria-live="polite">
     <h2>🎉 Your Energy Impact!</h2>
+    <div id="summary" aria-label="สรุปผลการประหยัดพลังงาน">
+      <p>📌 จำนวนอุปกรณ์ทั้งหมด: <strong id="totalQuantity">0</strong> เครื่อง</p>
+      <p>⚡ พลังงานที่ประหยัดได้ต่อวัน: <strong id="dailyEnergy">0.000</strong> kWh</p>
+    </div>
     <p>⚡ Energy Saved: <strong id="energy">0</strong> kWh</p>
     <p>🌍 Carbon Reduction: <strong id="carbon">0</strong> kgCO2e</p>
     <p>💰 Electricity Cost Saving: <strong id="cost">0</strong> THB</p>
@@ -57,11 +58,6 @@
   </section>
   <p class="hint">Results are estimates based on reference power ratings.</p>
 </main>
-<dialog id="wattDialog" aria-labelledby="wattTitle" aria-describedby="wattText">
-  <h2 id="wattTitle">กำลังไฟของอุปกรณ์</h2>
-  <p id="wattText"></p>
-  <button id="closeWattDialog" type="button">ตกลง</button>
-</dialog>
 <script>
   const SHEETS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxJ1D4rFb9jkRf0_AqQwdPyjCoWC-5KXTBniwZj6YZ33YQuK1aDWb_3V_m_W4mDe5iK/exec';
   const equipment = [
@@ -75,8 +71,6 @@
   const deviceRoot = document.getElementById('devices');
   const fieldsRoot = document.getElementById('deviceFields');
   const message = document.getElementById('message');
-  const wattDialog = document.getElementById('wattDialog');
-  const wattText = document.getElementById('wattText');
 
   function stepperMarkup(id, value, min, step, unit, label) {
     return `<div class="stepper" aria-label="${label}">
@@ -86,11 +80,6 @@
     </div>`;
   }
 
-  document.getElementById('closeWattDialog').addEventListener('click', () => wattDialog.close());
-  wattDialog.addEventListener('click', event => {
-    if (event.target === wattDialog) wattDialog.close();
-  });
-
   equipment.forEach(item => {
     const label = document.createElement('label');
     label.className = 'device';
@@ -98,21 +87,17 @@
     const checkbox = label.querySelector('input');
     checkbox.addEventListener('change', () => {
       let field = document.getElementById('fields-' + item.id);
-      if (checkbox.checked) {
-        wattText.textContent = `${item.name} ใช้กำลังไฟ ${item.watt} วัตต์ (W)`;
-        wattDialog.showModal();
-        if (!field) {
-          field = document.createElement('div');
-          field.className = 'field';
-          field.id = 'fields-' + item.id;
-          field.innerHTML = `<strong>${item.name}</strong>
-            <label>จำนวนอุปกรณ์</label>
-            ${stepperMarkup('quantity-' + item.id, 1, 1, 1, 'เครื่อง', 'จำนวนอุปกรณ์')}
-            <label>ลดการใช้งานกี่ชั่วโมงต่อวัน?</label>
-            ${stepperMarkup('hours-' + item.id, 1, 0.5, 0.5, 'ชั่วโมง', 'ชั่วโมงต่อวัน')}`;
-          fieldsRoot.appendChild(field);
-        }
-      } else if (field) {
+      if (checkbox.checked && !field) {
+        field = document.createElement('div');
+        field.className = 'field';
+        field.id = 'fields-' + item.id;
+        field.innerHTML = `<strong>${item.name}</strong>
+          <label>จำนวนอุปกรณ์</label>
+          ${stepperMarkup('quantity-' + item.id, 1, 1, 1, 'เครื่อง', 'จำนวนอุปกรณ์')}
+          <label>ลดการใช้งานกี่ชั่วโมงต่อวัน?</label>
+          ${stepperMarkup('hours-' + item.id, 1, 0.5, 0.5, 'ชั่วโมง', 'ชั่วโมงต่อวัน')}`;
+        fieldsRoot.appendChild(field);
+      } else if (!checkbox.checked && field) {
         field.remove();
       }
       document.getElementById('results').style.display = 'none';
@@ -138,17 +123,24 @@
     if (!selected.length) { alert('Please select at least one device.'); return; }
 
     let energySaved = 0;
+    let energySavedPerDay = 0;
+    let totalQuantity = 0;
     const devices = [];
     for (const item of selected) {
       const quantity = Number(document.getElementById('quantity-' + item.id).textContent);
       const hours = Number(document.getElementById('hours-' + item.id).textContent);
-      const energy = item.watt * quantity * hours * days / 1000;
+      const dailyEnergy = item.watt * quantity * hours / 1000;
+      const energy = dailyEnergy * days;
+      energySavedPerDay += dailyEnergy;
       energySaved += energy;
+      totalQuantity += quantity;
       devices.push({ name: item.name, watt: item.watt, quantity, hours, energy });
     }
 
     const carbon = energySaved * 0.5562;
     const cost = energySaved * 4.3555;
+    document.getElementById('totalQuantity').textContent = totalQuantity;
+    document.getElementById('dailyEnergy').textContent = energySavedPerDay.toFixed(3);
     document.getElementById('energy').textContent = energySaved.toFixed(2);
     document.getElementById('carbon').textContent = carbon.toFixed(2);
     document.getElementById('cost').textContent = cost.toFixed(2);
