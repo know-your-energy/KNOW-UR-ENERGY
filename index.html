@@ -20,9 +20,8 @@
     .stepper-unit { margin-left: 4px; color: #718477; font-size: 13px; font-weight: normal; }
     #calculate { display: block; width: 100%; margin-top: 20px; padding: 15px; border: 0; border-radius: 12px; background: #25864e; color: white; font-size: 19px; font-weight: bold; cursor: pointer; }
     #calculate:disabled { opacity: .65; cursor: wait; }
-    #results { display: none; margin-top: 20px; padding: 16px; border-radius: 12px; background: #eff8f0; }
-    #summary { margin: 0 0 18px; padding: 12px 14px; border: 1px solid #cde6d3; border-radius: 10px; background: #fff; }
-    #summary p { margin: 4px 0; }
+    #results { display: none; margin-top: 20px; padding: 16px; border: 1px solid #cde6d3; border-radius: 12px; background: #fff; }
+    #results p { margin: 10px 0; }
     #message { margin-top: 14px; text-align: center; font-weight: bold; overflow-wrap: anywhere; }
     .hint { color: #718477; font-size: 14px; }
     @media (max-width: 600px) { body { padding: 0; font-size: 17px; } main { padding: 20px 14px; border-radius: 0; } }
@@ -47,12 +46,10 @@
   <button id="calculate" type="button">⚡ Calculate My Energy Saving</button>
   <section id="results" aria-live="polite">
     <h2>🎉 Your Energy Impact!</h2>
-    <div id="summary" aria-label="สรุปผลการประหยัดพลังงาน">
-      <p>📌 จำนวนอุปกรณ์ทั้งหมด: <strong id="totalQuantity">0</strong> เครื่อง</p>
-      <p>⚡ พลังงานที่ประหยัดได้ต่อวัน: <strong id="dailyEnergy">0.000</strong> kWh</p>
-      <p>🌍 Carbon Reduction: <strong id="carbon">0</strong> kgCO2e</p>
-      <p>💰 Electricity Cost Saving: <strong id="cost">0</strong> THB</p>
-    </div>
+    <p>📌 จำนวนอุปกรณ์ทั้งหมด: <strong id="totalQuantity">0</strong> เครื่อง</p>
+    <p>⚡ พลังงานที่ประหยัดได้ต่อวัน: <strong id="dailyEnergy">0.000</strong> kWh</p>
+    <p>🌍 Carbon Reduction: <strong id="carbon">0</strong> kgCO2e</p>
+    <p>💰 Electricity Cost Saving: <strong id="cost">0</strong> THB</p>
     <div id="message"></div>
   </section>
   <p class="hint">Power ratings are preliminary equipment values from True Digital Park.</p>
@@ -119,7 +116,6 @@
     const days = Number(document.getElementById('days').textContent);
     if (!selected.length) { alert('Please select at least one device.'); return; }
 
-    let energySaved = 0;
     let energySavedPerDay = 0;
     let totalQuantity = 0;
     const devices = [];
@@ -129,15 +125,14 @@
       const dailyEnergy = item.watt * quantity * hours / 1000;
       const energy = dailyEnergy * days;
       energySavedPerDay += dailyEnergy;
-      energySaved += energy;
       totalQuantity += quantity;
       devices.push({ name: item.name, watt: item.watt, quantity, hours, energy });
     }
 
-    const carbon = energySaved * 0.5562;
-    const cost = energySaved * 4.3555;
     const dailyCarbon = energySavedPerDay * 0.5562;
     const dailyCost = energySavedPerDay * 4.3555;
+    const carbon = dailyCarbon * days;
+    const cost = dailyCost * days;
     document.getElementById('totalQuantity').textContent = totalQuantity;
     document.getElementById('dailyEnergy').textContent = energySavedPerDay.toFixed(3);
     document.getElementById('carbon').textContent = dailyCarbon.toFixed(2);
