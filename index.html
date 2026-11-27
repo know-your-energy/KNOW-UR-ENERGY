@@ -8,13 +8,15 @@
     * { box-sizing: border-box; }
     body { margin: 0; padding: 20px; background: #eaf4ec; color: #254b35; font: 18px/1.6 Arial, sans-serif; }
     main { max-width: 760px; min-height: 100vh; margin: auto; padding: 24px; background: #fff; border-radius: 18px; }
+    .logo { display: block; width: min(100%, 220px); height: auto; margin: 0 auto 12px; }
     h1, h2 { color: #21834c; text-align: center; }
+    h1 { margin-top: 0; }
     .device { display: flex; align-items: center; gap: 12px; margin: 10px 0; padding: 14px; border: 1px solid #cde6d3; border-radius: 12px; cursor: pointer; }
     .device input { width: 22px; height: 22px; accent-color: #25864e; }
     .field { margin: 18px 0; padding: 16px; border: 1px solid #cde6d3; border-radius: 14px; background: #f7fbf7; }
     .field > label { display: block; margin: 15px 0 8px; font-weight: bold; }
     .stepper { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 58px; padding: 5px 8px; border: 1px solid #d4e3d8; border-radius: 12px; background: #fff; }
-    .stepper button { display: flex; align-items: center; justify-content: center; flex: 0 0 42px; width: 42px; height: 42px; padding: 0; border: 0; border-radius: 9px; background: #e3f5e8; color: #21834c; font-size: 25px; font-weight: bold; cursor: pointer; touch-action: manipulation; }
+    .stepper button { display: flex; align-items: center; justify-content: center; flex: 0 0 42px; width: 42px; height: 42px; padding: 0; border: 0; border-radius: 9px; background: #e3f5e8; color: #21834c; font-size: 24px; cursor: pointer; }
     .stepper button:active { background: #c8e9d0; }
     .stepper-value { flex: 1; text-align: center; font-weight: bold; font-variant-numeric: tabular-nums; }
     .stepper-unit { margin-left: 4px; color: #718477; font-size: 13px; font-weight: normal; }
@@ -30,6 +32,7 @@
 </head>
 <body>
 <main>
+  <img class="logo" src="assets/logo.png" alt="KNOW YOUR ENERGY logo">
   <h1>⚡ KNOW YOUR ENERGY</h1>
   <p style="text-align:center">Small Actions, Big Energy Savings 🌱</p>
   <p><strong>1. เลือกอุปกรณ์ที่ต้องการประหยัดพลังงาน</strong></p>
